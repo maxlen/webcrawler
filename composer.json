@@ -1,0 +1,27 @@
+{
+    "name": "maxlen/webcrawler",
+    "description": "Search engine crawlers",
+    "type": "extension",
+    "keywords": [
+        "extension",  "crawler",  "search engines"
+    ],
+    "license": "BSD-4-Clause",
+    "minimum-stability": "1.0.*@dev",
+    "require": {
+        "php": ">=5.4.0",
+        "guzzle/guzzle": "~6.0",
+        "electrolinux/phpquery": "dev-master",
+        "phpcasperjs/phpcasperjs": "^1.0"
+    },
+    "authors": [
+        {
+            "name": "Maxim",
+            "email": "maxlen@inbox.ru"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "maxlen\\webcrawler\\": ""
+        }
+    }
+}
