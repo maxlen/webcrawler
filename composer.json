@@ -11,7 +11,7 @@
         "php": ">=5.4.0",
         "guzzle/guzzle": "~6.0",
         "electrolinux/phpquery": "dev-master",
-        "phpcasperjs/phpcasperjs": "^1.0"
+        "phpcasperjs/phpcasperjs": "1.*"
     },
     "authors": [
         {
