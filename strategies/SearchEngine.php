@@ -124,4 +124,22 @@ abstract class SearchEngine implements CrawlStrategy
 
         return $url;
     }
+
+    protected function setParamsForRequest($params)
+    {
+        $result = [];
+        if (empty($params)) {
+            return $result;
+        }
+
+        if (!empty($params['proxy'])) {
+            $result['curl'] = [
+                CURLOPT_PROXY => $params['proxy']['host'],
+                CURLOPT_PROXYPORT => $params['proxy']['port'],
+                CURLOPT_PROXYUSERPWD => "{$params['proxy']['login']}:{$params['proxy']['password']}",
+             ];
+        }
+
+        return $result;
+    }
 }

@@ -18,7 +18,12 @@ class GoogleSearch extends SearchEngine
     {
         $this->result = [];
         $client = new Client();
-        $res = $client->request('GET', $this->getSEUrl(SearchEngine::GOOGLE, $params['query'], $params));
+
+        $res = $client->request(
+            'GET',
+            $this->getSEUrl(SearchEngine::GOOGLE, $params['query'], $params),
+            $this->setParamsForRequest($params)
+        );
 
         var_dump($res->getStatusCode());
         if ($res->getStatusCode() != 200) {
