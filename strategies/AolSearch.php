@@ -11,13 +11,15 @@ namespace maxlen\webcrawler\strategies;
 use GuzzleHttp\Client;
 
 
-class GoogleSearch extends SearchEngine
+class AolSearch extends SearchEngine
 {
     public function crawl($params)
     {
-        echo PHP_EOL . "GOOGLE";
+        echo PHP_EOL . "AOL";
         $this->result = [];
         $client = new Client();
+
+        var_dump($params['query']);
 
         $res = $client->request(
             'GET',
@@ -31,8 +33,10 @@ class GoogleSearch extends SearchEngine
         }
 
         $body = $res->getBody();
+
+        echo $body;
         \phpQuery::newDocumentHTML($body);
-        $blocks = pq("div.g");
+        $blocks = pq("#w div.ALGO ul > li");
 
         if (count($blocks) == 0) {
             return $this->result;
@@ -42,38 +46,28 @@ class GoogleSearch extends SearchEngine
             $link = trim(pq($block)->find('h3 a')->attr('href'));
             if ($link != '') {
                 $item = new \stdClass();
-                $item->link = explode('&sa=U', trim($link, '/url?q='))[0];
+                $item->link = $link;
                 $item->title = trim(pq($block)->find('h3 a')->text());
-                $item->description = trim(pq($block)->find('span.st')->text());
+                $item->description = trim(pq($block)->find('p:eq(1)')->text());
                 $this->result['mainItems'][] = $item;
             }
         }
 
-        $mainItemsAmount = trim(pq('#resultStats')->text());
-        if ($mainItemsAmount != '') {
-            $mainItemsAmount = explode('(', $mainItemsAmount);
-            $mainItemsAmount = preg_replace('~\D~','',$mainItemsAmount[0]);
-            $this->result['mainItemsAmount'] = (int) trim($mainItemsAmount);
-        }
 
         return $this->result;
     }
 
-    public function getSEUrl($query, $params = [])
+    private function getSEUrl($query, $params = [])
     {
-        if (isset($params['lang'])) {
-            $lang = $params['lang'];
-        } else {
-            $lang = $this->lang;
-        }
-
         $query = urlencode($query);
         $start = '';
 
         if (isset($params['page']) && $params['page'] != 0) {
-            $start = "&start=" . ((int) $params['page'] * 10);
+            $start = "&page=" . ((int) $params['page'] + 1);
         }
-
-        return "https://www.google.com/search?q={$query}{$start}{$lang}&gws_rd=cr&filter=0";
+//        https://search.aol.com/aol/search?s_it=sb-home&v_t=na&q=test
+//        https://search.aol.com/aol/search?v_t=na&q=test&s_it=sb-home&page=2&oreq=aef91d71709944699a2b41c985e14136
+//        return "https://search.aol.com/aol/search?s_it=sb-top&s_chn=prt_bon&v_t=comsearch-aolnewtab-t&q={$query}{$start}";
+        return "https://search.aol.com/aol/search?v_t=na&s_it=sb-home&{$query}{$start}&oreq=";//&oreq=
     }
 }

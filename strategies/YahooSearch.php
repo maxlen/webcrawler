@@ -11,11 +11,10 @@ namespace maxlen\webcrawler\strategies;
 use GuzzleHttp\Client;
 
 
-class GoogleSearch extends SearchEngine
+class YahooSearch extends SearchEngine
 {
     public function crawl($params)
     {
-        echo PHP_EOL . "GOOGLE";
         $this->result = [];
         $client = new Client();
 
@@ -25,14 +24,14 @@ class GoogleSearch extends SearchEngine
             $this->setParamsForRequest($params)
         );
 
-        var_dump($res->getStatusCode());
         if ($res->getStatusCode() != 200) {
             return false;
         }
 
         $body = $res->getBody();
+
         \phpQuery::newDocumentHTML($body);
-        $blocks = pq("div.g");
+        $blocks = pq("div#main div#web ol li");
 
         if (count($blocks) == 0) {
             return $this->result;
@@ -42,17 +41,16 @@ class GoogleSearch extends SearchEngine
             $link = trim(pq($block)->find('h3 a')->attr('href'));
             if ($link != '') {
                 $item = new \stdClass();
-                $item->link = explode('&sa=U', trim($link, '/url?q='))[0];
+                $item->link = $link;
                 $item->title = trim(pq($block)->find('h3 a')->text());
-                $item->description = trim(pq($block)->find('span.st')->text());
+                $item->description = trim(pq($block)->find('div.compText.aAbs p')->text());
                 $this->result['mainItems'][] = $item;
             }
         }
 
-        $mainItemsAmount = trim(pq('#resultStats')->text());
+        $mainItemsAmount = trim(pq('div.compPagination span:last')->text());
         if ($mainItemsAmount != '') {
-            $mainItemsAmount = explode('(', $mainItemsAmount);
-            $mainItemsAmount = preg_replace('~\D~','',$mainItemsAmount[0]);
+            $mainItemsAmount = preg_replace('~\D~','',$mainItemsAmount);
             $this->result['mainItemsAmount'] = (int) trim($mainItemsAmount);
         }
 
@@ -61,19 +59,16 @@ class GoogleSearch extends SearchEngine
 
     public function getSEUrl($query, $params = [])
     {
-        if (isset($params['lang'])) {
-            $lang = $params['lang'];
-        } else {
-            $lang = $this->lang;
-        }
-
         $query = urlencode($query);
         $start = '';
 
         if (isset($params['page']) && $params['page'] != 0) {
-            $start = "&start=" . ((int) $params['page'] * 10);
+            $start = "&b=" . ((int) $params['page'] * 10+1);
         }
 
-        return "https://www.google.com/search?q={$query}{$start}{$lang}&gws_rd=cr&filter=0";
+        return "https://search.yahoo.com/search?n=10&pz=10&ei=UTF-8&va_vt=any&vo_vt=any&ve_vt=any&vp_vt=any&vst=0&" .
+            "vf=all&vm=p&fl=0&fr=yfp-t&vs=&p={$query}{$start}";
+//        return "https://search.yahoo.com/search;_ylt=Apg.fQFBzxhPrDgbbsxmnm2bvZx4;_ylu=X3oDM--;_ylc=X1MDMjc2NjY3OQ" .
+//            "Rfcg?pz=40&fr2=sb-top-search&ei=UTF-8&fr=yfp-t&p={$query}{$start}";
     }
 }

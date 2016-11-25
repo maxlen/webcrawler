@@ -9,6 +9,7 @@
 namespace maxlen\webcrawler\strategies;
 
 
+use maxlen\webcrawler\Client;
 use maxlen\webcrawler\interfaces\CrawlStrategy;
 
 abstract class SearchEngine implements CrawlStrategy

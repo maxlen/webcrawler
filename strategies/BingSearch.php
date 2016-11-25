@@ -2,8 +2,8 @@
 /**
  * Created by PhpStorm.
  * User: w
- * Date: 24.11.16
- * Time: 10:59
+ * Date: 25.11.16
+ * Time: 14:23
  */
 
 namespace maxlen\webcrawler\strategies;
@@ -11,11 +11,10 @@ namespace maxlen\webcrawler\strategies;
 use GuzzleHttp\Client;
 
 
-class GoogleSearch extends SearchEngine
+class BingSearch extends SearchEngine
 {
     public function crawl($params)
     {
-        echo PHP_EOL . "GOOGLE";
         $this->result = [];
         $client = new Client();
 
@@ -25,34 +24,33 @@ class GoogleSearch extends SearchEngine
             $this->setParamsForRequest($params)
         );
 
-        var_dump($res->getStatusCode());
         if ($res->getStatusCode() != 200) {
             return false;
         }
 
         $body = $res->getBody();
+
         \phpQuery::newDocumentHTML($body);
-        $blocks = pq("div.g");
+        $blocks = pq("#b_results li.b_algo");
 
         if (count($blocks) == 0) {
             return $this->result;
         }
 
         foreach ($blocks as $block) {
-            $link = trim(pq($block)->find('h3 a')->attr('href'));
+            $link = trim(pq($block)->find('h2 a')->attr('href'));
             if ($link != '') {
                 $item = new \stdClass();
-                $item->link = explode('&sa=U', trim($link, '/url?q='))[0];
-                $item->title = trim(pq($block)->find('h3 a')->text());
-                $item->description = trim(pq($block)->find('span.st')->text());
+                $item->link = $link;
+                $item->title = trim(pq($block)->find('h2 a')->text());
+                $item->description = trim(pq($block)->find('div.b_caption p')->text());
                 $this->result['mainItems'][] = $item;
             }
         }
 
-        $mainItemsAmount = trim(pq('#resultStats')->text());
+        $mainItemsAmount = trim(pq('#b_content #b_tween span.sb_count')->text());
         if ($mainItemsAmount != '') {
-            $mainItemsAmount = explode('(', $mainItemsAmount);
-            $mainItemsAmount = preg_replace('~\D~','',$mainItemsAmount[0]);
+            $mainItemsAmount = preg_replace('~\D~','',$mainItemsAmount);
             $this->result['mainItemsAmount'] = (int) trim($mainItemsAmount);
         }
 
@@ -61,19 +59,13 @@ class GoogleSearch extends SearchEngine
 
     public function getSEUrl($query, $params = [])
     {
-        if (isset($params['lang'])) {
-            $lang = $params['lang'];
-        } else {
-            $lang = $this->lang;
-        }
-
         $query = urlencode($query);
         $start = '';
 
         if (isset($params['page']) && $params['page'] != 0) {
-            $start = "&start=" . ((int) $params['page'] * 10);
+            $start = "&first=" . ((int) $params['page'] * 10 + 1);
         }
 
-        return "https://www.google.com/search?q={$query}{$start}{$lang}&gws_rd=cr&filter=0";
+        return "https://www.bing.com/search?q={$query}{$start}";
     }
 }
