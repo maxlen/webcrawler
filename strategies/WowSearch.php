@@ -11,15 +11,13 @@ namespace maxlen\webcrawler\strategies;
 use GuzzleHttp\Client;
 
 
-class AolSearch extends SearchEngine
+class WowSearch extends SearchEngine
 {
     public function crawl($params)
     {
-        echo PHP_EOL . "AOL";
+        echo PHP_EOL . "WOW";
         $this->result = [];
         $client = new Client();
-
-        var_dump($params['query']);
 
         $res = $client->request(
             'GET',
@@ -35,7 +33,8 @@ class AolSearch extends SearchEngine
         $body = $res->getBody();
 
         \phpQuery::newDocumentHTML($body);
-        $blocks = pq("#w div.ALGO ul > li");
+
+        $blocks = pq("div#c div.ALGO ul li");
 
         if (count($blocks) == 0) {
             return $this->result;
@@ -46,8 +45,8 @@ class AolSearch extends SearchEngine
             if ($link != '') {
                 $item = new \stdClass();
                 $item->link = $link;
-                $item->title = trim(pq($block)->find('h3 a')->text());
-                $item->description = trim(pq($block)->find('p:eq(1)')->text());
+                $item->title = pq($block)->find('h3 a')->text();
+                $item->description = pq($block)->find('p[property="f:desc"]')->text();
                 $this->result['mainItems'][] = $item;
             }
         }
@@ -64,6 +63,6 @@ class AolSearch extends SearchEngine
             $start = "&page=" . ((int) $params['page'] + 1);
         }
 
-        return "https://search.aol.com/aol/search?v_t=na&s_it=sb-home&q={$query}{$start}&oreq=";
+        return "http://search.wow.com/search?v_t=splus-hda&q={$query}&s_it=sb-top{$start}&oreq=";
     }
 }

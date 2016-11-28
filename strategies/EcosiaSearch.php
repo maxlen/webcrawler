@@ -11,15 +11,13 @@ namespace maxlen\webcrawler\strategies;
 use GuzzleHttp\Client;
 
 
-class AolSearch extends SearchEngine
+class EcosiaSearch extends SearchEngine
 {
     public function crawl($params)
     {
-        echo PHP_EOL . "AOL";
+        echo PHP_EOL . "ECOSIA";
         $this->result = [];
         $client = new Client();
-
-        var_dump($params['query']);
 
         $res = $client->request(
             'GET',
@@ -33,24 +31,28 @@ class AolSearch extends SearchEngine
         }
 
         $body = $res->getBody();
-
         \phpQuery::newDocumentHTML($body);
-        $blocks = pq("#w div.ALGO ul > li");
+
+        $blocks = pq("div.result.js-result");
 
         if (count($blocks) == 0) {
             return $this->result;
         }
 
         foreach ($blocks as $block) {
-            $link = trim(pq($block)->find('h3 a')->attr('href'));
+            $link = trim(pq($block)->find('a.js-result-title')->attr('href'));
             if ($link != '') {
                 $item = new \stdClass();
                 $item->link = $link;
-                $item->title = trim(pq($block)->find('h3 a')->text());
-                $item->description = trim(pq($block)->find('p:eq(1)')->text());
+                $item->title = trim(pq($block)->find('a.js-result-title')->text());
+                $item->description = trim(pq($block)->find('p.result-snippet')->text());
                 $this->result['mainItems'][] = $item;
             }
         }
+
+        $mainItemsAmount = pq("div.search-filters-text.left")->text();
+        $mainItemsAmount = explode('result', $mainItemsAmount);
+        $this->result['mainItemsAmount'] = (int) str_replace(',', '', trim($mainItemsAmount[0]));
 
         return $this->result;
     }
@@ -58,12 +60,7 @@ class AolSearch extends SearchEngine
     public function getSEUrl($query, $params = [])
     {
         $query = urlencode($query);
-        $start = '';
-
-        if (isset($params['page']) && $params['page'] != 0) {
-            $start = "&page=" . ((int) $params['page'] + 1);
-        }
-
-        return "https://search.aol.com/aol/search?v_t=na&s_it=sb-home&q={$query}{$start}&oreq=";
+        $start = (isset($params['page']) && $params['page'] != 0) ? "&p={$params['page']}" : '';
+        return "https://www.ecosia.org/search?q={$query}{$start}";
     }
 }
