@@ -8,3 +8,10 @@ Search engines crawlers
   $crawler = new WebCrawler(['strategy' => new GoogleSearch()]);
   print_r($crawler->crawl($params));
 ```
+
+### Site-parse example:
+```
+  $params = ['url' => 'http://your-site.com', 'proxy' => []];
+  $crawler = new WebCrawler(['strategy' => new SiteSearch()]);
+  print_r($crawler->crawl($params));
+```

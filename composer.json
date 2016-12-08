@@ -9,8 +9,7 @@
     "require": {
         "php": ">=5.4.0",
         "guzzlehttp/guzzle": "~6.0",
-        "electrolinux/phpquery": "dev-master",
-        "phpcasperjs/phpcasperjs": "1.*"
+        "electrolinux/phpquery": "dev-master"
     },
     "authors": [
         {
