@@ -138,6 +138,7 @@ abstract class SearchEngine implements CrawlStrategy
                 CURLOPT_PROXY => $params['proxy']['host'],
                 CURLOPT_PROXYPORT => $params['proxy']['port'],
                 CURLOPT_PROXYUSERPWD => "{$params['proxy']['login']}:{$params['proxy']['password']}",
+                CURLOPT_HTTPPROXYTUNNEL => 1,
              ];
         }
 
